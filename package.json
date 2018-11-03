@@ -1,0 +1,35 @@
+{
+		"name": "socket.io-unit",
+		"version": "0.0.0",
+		"description": "Library for unit testing socket.io endpoints",
+		"keywords": [
+				"socket.io",
+				"websocket",
+				"unit",
+				"unit testing"
+		],
+		"homepage": "https://github.com/BrunoRB/socket.io-unit",
+		"license": "MIT",
+		"author": {
+				"name": "Bruno Roberto Búrigo",
+				"url": "https://brunorb.com"
+		},
+		"main": "src/main.js",
+		"repository": {
+				"type": "git",
+				"url": "https://github.com/BrunoRB/socket.io-unit"
+		},
+		"dependencies": {
+				"socket.io": "^2.1.1"
+		},
+		"devDependencies": {
+				"eslint": "^5.8.0",
+				"mocha": "^5.2.0",
+				"nodemon": "^1.18.5"
+		},
+		"scripts": {
+				"lint": "node_modules/.bin/eslint -c .eslintrc.json src/ test/ test-server.js --quiet",
+				"test": "node_modules/.bin/mocha test/",
+				"server": "node_modules/.bin/nodemon test-server.js"
+		}
+}
