@@ -23,29 +23,33 @@ First you need to make sure that all your socket.io server endpoints have and [a
 
 Then as the second parameter for `socket.io-unit` you should pass a function that handles the acknowledgement:
 
-    const SocketioUnit = require('socket.io-unit');
+```javascript
+const SocketioUnit = require('socket.io-unit');
 
-	let so = new SocketioUnit(
-		URL,
-		function(result) {
-			if (result.status === true) {
-				return result;
-			}
-			else {
-				throw result.message;
-			}
+let so = new SocketioUnit(
+	URL,
+	function(result) {
+		if (result.status === true) {
+			return result;
 		}
-	);
+		else {
+			throw result.message;
+		}
+	}
+);
+```
 
 As in the example the function will receive the server data that was passed to "`cb`", then in case of a success it should return some of that data and in a failure it should throw an exception.
 Note that what the data passed to `cb` is is up to you.
 
 The `socket.io-unit` instance is simple connected [`socket.io client`](https://socket.io/docs/client-api/#Socket) object augmented with three new methods: `emitP`, `onP` and `disconnectP`, which are just "promisified" versions of the standard methods, examples:
 
-	let data = await so.emitP('createFile');
-	let data2 = await so.onP('some event emitted by the server');
+```javascript
+let data = await so.emitP('createFile');
+let data2 = await so.onP('some event emitted by the server');
 
-	await.disconnectP(); // disconnect the client
+await.disconnectP(); // disconnect the client
+```
 
 
 Check [test-server.js](test-server.js) for a server example and [test/BasicTest.js](test/BasicTest.js) for examples using the [Mocha](https://mochajs.org/) test framework.
