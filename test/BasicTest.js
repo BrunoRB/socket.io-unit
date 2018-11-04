@@ -3,24 +3,22 @@
 const assert = require('assert');
 const fs = require('fs');
 const SocketioUnit = require(__dirname + '/../src/main.js');
-const PORT = process.env.SOCKET_PORT || 8080;
+const URL = `http://localhost:${process.env.SOCKET_PORT || 8080}`;
 
 let so = new SocketioUnit(
-	`http://localhost:${PORT}`,
-	function(resolve, reject) {
-		return function(result) {
-			if (result.status === true) {
-				resolve(result);
-			}
-			else {
-				reject(JSON.stringify(result));
-			}
-		};
+	URL,
+	function(result) {
+		if (result.status === true) {
+			return result;
+		}
+		else {
+			throw (JSON.stringify(result));
+		}
 	},
 	{}
 );
 
-after(function() {
+afterEach(function() {
 	return SocketioUnit.disconnectAll();
 });
 
@@ -83,6 +81,12 @@ describe('Test emitP', function() {
 		}
 
 		assert.fail('an exception should have been thrown');
+	});
+
+	it('should "return" the message "hi" for emit(sayHi) for all clients', async function() {
+		let clients = await so.connectMany(5);
+		let results = await Promise.all(clients.map(c => c.emitP('sayHi')));
+		assert.ok(results.every(r => r.message === 'hi'));
 	});
 });
 
