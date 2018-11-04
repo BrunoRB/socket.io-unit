@@ -11,10 +11,11 @@ class SocketioUnit {
 					try {
 						resolve(cb(...results));
 					}
-					catch(e) {
+					catch (e) {
 						reject(e);
 					}
- 				};
+				}
+
 				if (data.length) {
 					client.emit(event, ...data, pCb);
 				}
