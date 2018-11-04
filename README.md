@@ -1,6 +1,6 @@
 # socket.io-unit
 
-Unit testing
+Unit testing for `socket.io` servers.
 
 ## Install
 
