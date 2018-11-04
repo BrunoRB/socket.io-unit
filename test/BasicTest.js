@@ -12,10 +12,9 @@ let so = new SocketioUnit(
 			return result;
 		}
 		else {
-			throw (JSON.stringify(result));
+			throw JSON.stringify(result);
 		}
-	},
-	{}
+	}
 );
 
 afterEach(function() {
