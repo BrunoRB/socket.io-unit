@@ -10,16 +10,18 @@ Unit testing for `socket.io` servers.
 
 First you need to make sure that all your socket.io server endpoints have and [acknowledgement callback](https://socket.io/docs/#Sending-and-getting-data-acknowledgements) as the last parameter, and that it's always called, ex:
 
-	socket.on('createFile', function(fileName, contents, cb) {
-		if (something) {
-			let filePath = path.join(os.tmpdir(), fileName);
-			fs.writeFileSync(filePath, contents);
-			cb({status: true, path: filePath});
-		}
-		else {
-			cb({status: false, message: 'Failed for some reason'});
-		}
-	});
+```javascript
+socket.on('createFile', function(fileName, contents, cb) {
+	if (something) {
+		let filePath = path.join(os.tmpdir(), fileName);
+		fs.writeFileSync(filePath, contents);
+		cb({status: true, path: filePath});
+	}
+	else {
+		cb({status: false, message: 'Failed for some reason'});
+	}
+});
+```
 
 Then as the second parameter for `socket.io-unit` you should pass a function that handles the acknowledgement:
 
