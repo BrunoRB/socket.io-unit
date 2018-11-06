@@ -122,7 +122,7 @@ class SocketioUnit {
 			};
 
 			let t = setTimeout(() => {
-				reject(`Connection exceeded ${this.timeout}ms`);
+				reject(`Could not estabilish a connection after ${this._timeout}ms`);
 			}, this._timeout);
 			client.once('connect', function() {
 				clearTimeout(t);
