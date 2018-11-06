@@ -91,9 +91,9 @@ class SocketioUnit {
 	async connect() {
 		const io = require('socket.io-client');
 
-		let params = {'transports': ['websocket']};
-		for (let i in this.params) {
-			params[i] = this.params[i];
+		let params = {transports: ['websocket', 'polling']};
+		for (let i in this._params) {
+			params[i] = this._params[i];
 		}
 
 		let client = io(this._url, params);
