@@ -7,12 +7,12 @@ const URL = `http://localhost:${process.env.SOCKET_PORT || 8080}`;
 
 let so = new SocketioUnit(
 	URL,
-	function(result) {
+	result => {
 		if (result.status === true) {
-			return result;
+			return Promise.resolve(result);
 		}
 		else {
-			throw JSON.stringify(result);
+			return Promise.reject(JSON.stringify(result));
 		}
 	}
 );

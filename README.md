@@ -23,19 +23,21 @@ socket.on('createFile', function(fileName, contents, cb) {
 });
 ```
 
-Then as the second parameter for `socket.io-unit` you should pass a function that handles the acknowledgement:
+Then as the second parameter for `socket.io-unit` you should pass a function that handles the acknowledgement, returning either `Promise`
+success or rejection:
 
 ```javascript
 const SocketioUnit = require('socket.io-unit');
 
 let so = new SocketioUnit(
 	URL,
-	function(result) {
+	// result is something like: {status: true|false, message: '', ...}
+	(result) => {
 		if (result.status === true) {
-			return result;
+			return Promise.resolve(result);
 		}
 		else {
-			throw result.message;
+			return Promise.reject(result.message);
 		}
 	}
 );

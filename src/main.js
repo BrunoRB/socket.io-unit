@@ -8,11 +8,12 @@ class SocketioUnit {
 		return function(event, ...data) {
 			return new Promise(function(resolve, reject) {
 				let pCb = function(...results) {
-					try {
-						resolve(cb(...results));
+					let res = cb(...results);
+					if (res instanceof Promise) {
+						res.then(resolve).catch(reject);
 					}
-					catch (e) {
-						reject(e);
+					else {
+						reject('The handler function must be async or return a Promise.');
 					}
 				}
 
@@ -53,11 +54,12 @@ class SocketioUnit {
 	 * @param {string} url Socket server url
 	 * @param {Function} cb Function that will handle the server
 	 * 	acknowledgement (https://socket.io/docs/#Sending-and-getting-data-acknowledgements).
-	 * 	It should return the server data in case of success, else it should throw an exception. ex	:
+	 * 	It should return a Promise. ex:
 	 * 	<pre>
-	 * 		return function(serverAckStatus, serverAckData) {
-	 *			if (serverAckStatus) { return serverAckData } else { throw 'some failure message (maybe something from the server0'; }
-	 * 		}
+	 * 		new SocketioUnit(url, (serverAckStatus, serverAckData) => {
+	 *			if (serverAckStatus) { return Promise.resolve(serverAckData) }
+	 *			else { return Promise.reject(serverAckData) }
+	 * 		});
 	 * 	</pre>
 	 * @param {Number} timeout How much time, in milliseconds, to wait for a connection (default = 2000)
 	 * @param {Object} params socket.io-client connection parameters, see https://socket.io/docs/client-api/#new-Manager-url-options
@@ -107,7 +109,7 @@ class SocketioUnit {
 
 			client.onP = async function(event) {
 				return new Promise(function(innerRes) {
-					client.on(event, function(...data) {
+					client.once(event, function(...data) {
 						innerRes(...data);
 					});
 				});
