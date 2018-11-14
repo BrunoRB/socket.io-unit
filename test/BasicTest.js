@@ -47,6 +47,15 @@ describe('Test connection', function() {
 		assert.ok(!client.connected);
 		assert.ok(!client2.connected);
 	});
+
+	xit('should manually reconnect a disconnected client', async function() {
+		let client = await so.connect();
+		await client.disconnectP();
+		assert.ok(!client.connected);
+		await client.reconnectP();
+
+		assert.ok(client.connected);
+	});
 });
 
 describe('Test emitP', function() {

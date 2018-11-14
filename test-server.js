@@ -9,7 +9,7 @@ console.info(`Starting socket server at ${PORT}`);
 app.listen(PORT);
 
 io.on('connection', function (socket) {
-	console.info('Connected');
+	console.info('Connected', socket.id);
 
 	socket.on('sayHi', function(cb) {
 		cb({status: true, message: 'hi'});

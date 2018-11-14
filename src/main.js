@@ -123,6 +123,15 @@ class SocketioUnit {
 				return p;
 			};
 
+			client.reconnectP = async function() {
+				return new Promise(function(resolve, reject) {
+					client.once('reconnect', resolve);
+					client.once('reconnect_error', reject);
+					client.once('reconnect_failed', reject);
+					client.open();
+				});
+			};
+
 			let t = setTimeout(() => {
 				reject(`Could not estabilish a connection after ${this._timeout}ms`);
 			}, this._timeout);
