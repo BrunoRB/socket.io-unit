@@ -58,8 +58,8 @@ describe('Test connection', function() {
 		let client = await so.connect();
 		await client.disconnectP();
 		assert.ok(!client.connected);
-		await client.reconnectP();
 
+		client = await client.reconnectP();
 		assert.ok(client.connected);
 	});
 });

@@ -84,6 +84,47 @@ class SocketioUnit {
 		this._params = params;
 	}
 
+	async _augmentClient(client) {
+		client.emitP = SocketioUnit._getSocketEmitP(this._cb, client);
+
+		client.on('disconnect', function() {
+			CONNECTEDS = CONNECTEDS.filter(c => c.id !== client.id);
+		});
+
+		client.onP = async function(event) {
+			return new Promise(function(innerRes) {
+				client.once(event, function(...data) {
+					innerRes(...data);
+				});
+			});
+		};
+
+		client.disconnectP = async function() {
+			var p = new Promise(function(innerRes) {
+				client.on('disconnect', innerRes);
+			});
+			client.disconnect();
+			return p;
+		};
+
+		client.reconnectP = async function() {
+			return new Promise(function(resolve, reject) {
+				let _c = null;
+				client.once('connect', function() {
+					CONNECTEDS.push(_c);
+					resolve(_c);
+				});
+				client.once('reconnect_error', function() {
+					reject(_c);
+				});
+				client.once('reconnect_failed', function() {
+					reject(_c);
+				});
+				_c = client.open();
+			});
+		};
+	}
+
 	/**
 	 * Connect a client to a socket server.
 	 *
@@ -101,36 +142,7 @@ class SocketioUnit {
 		let client = io(this._url, params);
 
 		return new Promise((resolve, reject) => {
-			client.emitP = SocketioUnit._getSocketEmitP(this._cb, client);
-
-			client.on('disconnect', function() {
-				CONNECTEDS = CONNECTEDS.filter(c => c.id !== client.id);
-			});
-
-			client.onP = async function(event) {
-				return new Promise(function(innerRes) {
-					client.once(event, function(...data) {
-						innerRes(...data);
-					});
-				});
-			};
-
-			client.disconnectP = async function() {
-				var p = new Promise(function(innerRes) {
-					client.on('disconnect', innerRes);
-				});
-				client.disconnect();
-				return p;
-			};
-
-			client.reconnectP = async function() {
-				return new Promise(function(resolve, reject) {
-					client.once('reconnect', resolve);
-					client.once('reconnect_error', reject);
-					client.once('reconnect_failed', reject);
-					client.open();
-				});
-			};
+			this._augmentClient(client);
 
 			let t = setTimeout(() => {
 				reject(`Could not estabilish a connection after ${this._timeout}ms`);
@@ -139,6 +151,10 @@ class SocketioUnit {
 				clearTimeout(t);
 				CONNECTEDS.push(client);
 				resolve(client);
+			});
+			client.once('connect_error', function(e) {
+				clearTimeout(t);
+				reject(e);
 			});
 		});
 	}
