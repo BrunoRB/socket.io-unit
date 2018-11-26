@@ -40,3 +40,7 @@ io.on('connection', function (socket) {
 io.of('/clientNamespace').on('connection', function () {
 	console.log('Connected to /clientNamespace');
 });
+
+io.of('/failureNamespace').on('connection', function () {
+	throw 'Failed';
+});

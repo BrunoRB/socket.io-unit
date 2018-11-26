@@ -48,6 +48,18 @@ describe('Test connection', function() {
 		assert.ok(!client2.connected);
 	});
 
+	it('should reject the connection in case of an error', async function() {
+		let ok = false;
+		try {
+			await new SocketioUnit('http://localhost:8080/failureNamespace').connect();
+		}
+		catch(e) {
+			ok = true;
+		}
+
+		assert.ok(ok, 'Should have failed');
+	});
+
 	xit('should manually reconnect a disconnected client', async function() {
 		let client = await so.connect();
 		await client.disconnectP();
