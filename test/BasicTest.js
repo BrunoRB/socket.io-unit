@@ -28,17 +28,13 @@ describe('Test connection', function() {
 	});
 
 	it('should establish a namespace connection', async function() {
-		let client = await so.connect(null, {
-			url: 'http://localhost:8080/clientNamespace'
-		});
+		let client = await so.connect(`${URL}/clientNamespace`);
 		assert.ok(client.connected);
 	});
 
 	it('should disconnect all clients', async function() {
 		let client = await so.connect();
-		let client2 = await so.connect(null, {
-			url: 'http://localhost:8080/clientNamespace'
-		});
+		let client2 = await so.connect(`${URL}/clientNamespace`);
 		assert.ok(client.connected);
 		assert.ok(client2.connected);
 
@@ -51,7 +47,7 @@ describe('Test connection', function() {
 	it('should reject the connection in case of an error', async function() {
 		let ok = false;
 		try {
-			await new SocketioUnit('http://localhost:8080/failureNamespace').connect();
+			await new SocketioUnit(`${URL}/failureNamespace`).connect();
 		}
 		catch(e) {
 			ok = true;
