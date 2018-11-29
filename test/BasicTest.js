@@ -43,7 +43,7 @@ describe('Test connection', function() {
 		assert.ok(!client2.connected);
 	});
 
-	xit('should reject the connection in case of an error', async function() {
+	it('should reject the connection in case of an error', async function() {
 		let ok = false;
 		try {
 			await new SocketioUnit(`${URL}/failureNamespace`, callbackHandler).connect();

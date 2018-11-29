@@ -147,8 +147,15 @@ class SocketioUnit {
 			let t = setTimeout(() => {
 				reject(`Could not estabilish a connection after ${this._timeout}ms`);
 			}, this._timeout);
+
+			client.once('error', function(e) {
+				clearTimeout(t);
+				client.disconnect();
+				reject(e);
+			});
 			client.once('connect', function() {
 				clearTimeout(t);
+				client.off('error');
 				CONNECTEDS.push(client);
 				resolve(client);
 			});

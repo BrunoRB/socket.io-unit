@@ -41,6 +41,8 @@ io.of('/clientNamespace').on('connection', function () {
 	console.log('Connected to /clientNamespace');
 });
 
-io.of('/failureNamespace').on('connection', function () {
-	throw 'Failed';
+io.of('/failureNamespace').use(function(socket, next) {
+	next(new Error('Failed'));
+}).on('connection', function() {
+	throw '/failureNamespace';
 });
