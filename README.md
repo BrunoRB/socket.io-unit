@@ -29,6 +29,7 @@ Then as the second parameter for `SocketioUnit` you should pass a function that 
 
 ```javascript
 const SocketioUnit = require('socket.io-unit');
+let URL	= 'https://localhost:3000';
 
 let so = new SocketioUnit(
 	URL,
@@ -54,7 +55,7 @@ let client3 = await so.connect();
 
 ```
 
-Each client is an augmented version of a common [`socket.io client`](https://socket.io/docs/client-api/#Socket). They have the `emitP`, `onP` and `disconnectP` methods, which are just "promisified" versions of the standard ones.
+Each client is an augmented version of a common [`socket.io client`](https://socket.io/docs/client-api/#Socket). They have the `emitP`, `onP` and `disconnectP` methods, which are just "promisified" versions of the standard ones:
 
 ```javascript
 
@@ -85,13 +86,13 @@ Return all `socket.io-unit` connected clients.
  - `url`: [server url](https://socket.io/docs/client-api/#new-Manager-url-options).
  - `handlerFunction`: Function that handles the [server
  acknowledgement](https://socket.io/docs/#Sending-and-getting-data-acknowledgements).
- - `timeout`: how much time to wait for the server connectin.
+ - `timeout`: how much time to wait for the server connection.
  - `parameters`: [options](https://socket.io/docs/client-api/#new-Manager-url-options).
 
 ### .connect() -> Promise
 
-Return a connected socket.io-client wrapped in a Promise and augmented with the
-`onP`, `emitP` and `disconnectP` methods (P stands for `Promise`).
+Return a connected `socket.io-client` object wrapped in a Promise and augmented with the
+`onP`, `emitP` and `disconnectP` methods.
 
 ### .connectMany(_n = 2_) -> [Promise1, Promise2, ..., Promise _n_]
 
