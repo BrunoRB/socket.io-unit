@@ -124,7 +124,7 @@ Promise based verison of the [`on`](https://socket.io/docs/client-api/#socket-on
 ```javascript
 // server
 socket.emit('someEvent', 'hi');
-socket.emit('secondEvent', 'foo', 'bar);
+socket.emit('secondEvent', 'foo', 'bar');
 ```
 ```javascript
 // client
