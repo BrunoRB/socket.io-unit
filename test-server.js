@@ -27,7 +27,7 @@ io.on('connection', function (socket) {
 	});
 
 	socket.on('xping', function(cb) {
-		socket.emit('xpong', 'ping ok');
+		socket.emit('xpong', '1', '2', '3');
 		cb({status: true});
 	});
 

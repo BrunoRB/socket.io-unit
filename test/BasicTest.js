@@ -110,7 +110,7 @@ describe('Test onP', function() {
 		let pongPromise = client.onP('xpong');
 		await client.emitP('xping');
 		let pongResult = await pongPromise;
-		assert.equal('ping ok', pongResult);
+		assert.deepEqual(['1', '2', '3'], pongResult);
 	});
 
 	it('should receive "broadcasted!" for all clients listening to "broadcastToAll"', async function() {
@@ -123,6 +123,6 @@ describe('Test onP', function() {
 		let results = await Promise.all(pArr);
 		assert.equal(5, results.length);
 
-		assert.ok(results.every(r => r === 'broadcasted!'));
+		assert.ok(results.every(r => r[0] === 'broadcasted!'));
 	});
 });
