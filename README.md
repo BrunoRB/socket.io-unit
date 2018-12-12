@@ -45,7 +45,7 @@ let so = new SocketioUnit(
 );
 ```
 
-Now you can connnect clients with the `.connect()` method:
+Now you can connect clients with the `.connect()` method:
 
 ```javascript
 
@@ -81,7 +81,7 @@ Disconnect all `socket.io-unit` connected clients.
 
 Return all `socket.io-unit` connected clients.
 
-### new SocketioUnit(url, handlerFunction, timeout = 2000, parameters = {})
+<h3 id="constructor-siu">new SocketioUnit(url, handlerFunction, timeout = 2000, parameters = {})</h3>
 
  - `url`: [server url](https://socket.io/docs/client-api/#new-Manager-url-options).
  - `handlerFunction`: Function that handles the [server
@@ -97,6 +97,51 @@ Return a connected `socket.io-client` object wrapped in a Promise and augmented 
 ### .connectMany(_n = 2_) -> [Promise1, Promise2, ..., Promise _n_]
 
 _n_ * `.connect`.
+
+### .emitP() -> Promise
+
+Promise based version of the [`emit`](https://socket.io/docs/client-api/#socket-emit-eventName-%E2%80%A6args-ack) method.
+
+```javascript
+// server
+socket.on('ev', function(arg1, arg2, cb) {
+	cb({status: true, data: 'some data'});
+});
+```
+```javascript
+// client
+let result = await client1.emitP('ev');
+assert.ok(result.status);
+assert.equal('some data', result.data);
+```
+
+Note that in order for it to work you need to define a proper `handler function` in the [`constructor`](#constructor-siu).
+
+### .onP() -> Promise
+
+Promise based verison of the [`on`](https://socket.io/docs/client-api/#socket-on-eventName-callback) method. If successful the promise will resolve with an array that contains the values emitted by the server, example:
+
+```javascript
+// server
+socket.emit('someEvent', 'hi');
+socket.emit('secondEvent', 'foo', 'bar);
+```
+```javascript
+// client
+let data = await client1.onP('someEvent');
+assert.equal('hi', data[0]);
+
+let [foo, var] = await client1.onP('secondEvent');
+
+assert.equal('foo', foo);
+assert.equal('bar', bar);
+```
+
+### .disconnectP() -> Promise
+
+Promise based verison of the [`disconnect`](https://socket.io/docs/client-api/#socket-disconnect) method.
+The promise being resolved doesn't guarantee that the server has acknowledged the disconnection.
+
 
 ## Tests
 
