@@ -48,7 +48,7 @@ describe('Test connection', function() {
 		try {
 			await new SocketioUnit(`${URL}/failureNamespace`, callbackHandler).connect();
 		}
-		catch(e) {
+		catch (e) {
 			ok = true;
 		}
 		assert.ok(ok, 'Should have failed');

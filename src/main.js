@@ -5,7 +5,7 @@ let CONNECTEDS = [];
 class SocketioUnit {
 
 	static _getSocketEmitP(cb, client) {
-	return function(event, ...data) {
+		return function(event, ...data) {
 			return new Promise(function(resolve, reject) {
 				let pCb = function(...results) {
 					let res = cb(...results);
