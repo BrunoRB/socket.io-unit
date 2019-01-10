@@ -1,6 +1,6 @@
 {
 		"name": "socket.io-unit",
-		"version": "0.2.0",
+		"version": "1.0.0",
 		"description": "Library for unit testing socket.io endpoints",
 		"keywords": [
 				"socket.io",
