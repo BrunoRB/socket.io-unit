@@ -22,25 +22,25 @@ afterEach(function() {
 
 describe('Test connection', function() {
 	it('should establish a basic connection', async function() {
-		let client = await so.connect();
-		assert.ok(client.connected);
+		let testClient = await so.connect();
+		assert.ok(testClient.client.connected);
 	});
 
 	it('should establish a namespace connection', async function() {
-		let client = await so.connect(`${URL}/clientNamespace`, callbackHandler);
-		assert.ok(client.connected);
+		let testClient = await so.connect(`${URL}/clientNamespace`, callbackHandler);
+		assert.ok(testClient.client.connected);
 	});
 
 	it('should disconnect all clients', async function() {
-		let client = await so.connect();
-		let client2 = await so.connect(`${URL}/clientNamespace`, callbackHandler);
-		assert.ok(client.connected);
-		assert.ok(client2.connected);
+		let testClient = await so.connect();
+		let testClient2 = await so.connect(`${URL}/clientNamespace`, callbackHandler);
+		assert.ok(testClient.client.connected);
+		assert.ok(testClient2.client.connected);
 
 		await SocketioUnit.disconnectAll();
 
-		assert.ok(!client.connected);
-		assert.ok(!client2.connected);
+		assert.ok(!testClient.connected);
+		assert.ok(!testClient2.connected);
 	});
 
 	it('should reject the connection in case of an error', async function() {
@@ -55,29 +55,29 @@ describe('Test connection', function() {
 	});
 
 	xit('should manually reconnect a disconnected client', async function() {
-		let client = await so.connect();
-		await client.disconnectP();
-		assert.ok(!client.connected);
+		let testClient = await so.connect();
+		await testClient.disconnect();
+		assert.ok(!testClient.connected);
 
-		client = await client.reconnectP();
-		assert.ok(client.connected);
+		testClient = await testClient.reconnectP();
+		assert.ok(testClient.connected);
 	});
 });
 
-describe('Test emitP', function() {
+describe('Test emit', function() {
 
 	it('should "return" the message "hi" for emit(sayHi)', async function() {
-		let client = await so.connect();
-		let data = await client.emitP('sayHi');
+		let testClient = await so.connect();
+		let data = await testClient.emit('sayHi');
 		assert.ok(data.status);
 		assert.equal('hi', data.message);
 	});
 
 	it('should create a file named `fName` with contents `c` for emit(createFile, fName, c)', async function() {
-		let client = await so.connect();
+		let testClient = await so.connect();
 		let fileName = 'mytest.txt';
 		let contents = Math.random();
-		let data = await client.emitP('createFile', fileName, contents);
+		let data = await testClient.emit('createFile', fileName, contents);
 
 		assert.ok(data.status);
 		assert.ok(data.path.endsWith(fileName));
@@ -86,8 +86,8 @@ describe('Test emitP', function() {
 
 	it('should reject the promise', async function() {
 		try {
-			let client = await so.connect();
-			await client.emitP('shouldFail');
+			let testClient = await so.connect();
+			await testClient.emit('shouldFail');
 		}
 		catch (e) {
 			assert.ok(true);
@@ -99,16 +99,16 @@ describe('Test emitP', function() {
 
 	it('should "return" the message "hi" for emit(sayHi) for all clients', async function() {
 		let clients = await so.connectMany(5);
-		let results = await Promise.all(clients.map(c => c.emitP('sayHi')));
+		let results = await Promise.all(clients.map(c => c.emit('sayHi')));
 		assert.ok(results.every(r => r.message === 'hi'));
 	});
 });
 
-describe('Test onP', function() {
+describe('Test on', function() {
 	it('should receive a xpong after emitting xping', async function() {
-		let client = await so.connect();
-		let pongPromise = client.onP('xpong');
-		await client.emitP('xping');
+		let testClient = await so.connect();
+		let pongPromise = testClient.on('xpong');
+		await testClient.emit('xping');
 		let pongResult = await pongPromise;
 		assert.deepEqual(['1', '2', '3'], pongResult);
 	});
@@ -116,9 +116,9 @@ describe('Test onP', function() {
 	it('should receive "broadcasted!" for all clients listening to "broadcastToAll"', async function() {
 		let clients = await so.connectMany(5);
 
-		let pArr = clients.map(c => c.onP('broadcastToAll'));
+		let pArr = clients.map(c => c.on('broadcastToAll'));
 
-		await clients[0].emitP('broadcastToAll');
+		await clients[0].emit('broadcastToAll');
 
 		let results = await Promise.all(pArr);
 		assert.equal(5, results.length);
