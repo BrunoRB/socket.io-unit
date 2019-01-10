@@ -25,7 +25,7 @@ socket.on('createFile', function(fileName, contents, cb) {
 });
 ```
 
-Then as the second parameter for `SocketioUnit` you should pass a function that handles the acknowledgement, returning either a resolved or rejected `Promise`:
+Then as the second parameter for `socket.io-unit` you should pass a function that handles the acknowledgement, returning either a resolved or rejected `Promise`:
 
 ```javascript
 const SocketioUnit = require('socket.io-unit');
@@ -49,25 +49,25 @@ Now you can connect clients with the `.connect()` method:
 
 ```javascript
 
-let client1 = await so.connect();
-let client2 = await so.connect();
-let client3 = await so.connect();
+let testClient1 = await so.connect();
+let testClient2 = await so.connect();
+let testClient3 = await so.connect();
 
 ```
 
-Each client is an augmented version of a common [`socket.io client`](https://socket.io/docs/client-api/#Socket). They have the `emitP`, `onP` and `disconnectP` methods, which are just "promisified" versions of the standard ones:
+Each object contains `Promise` based versions of the usual `on`, `emit` and `disconnect` methods of a [`socket.io client`](https://socket.io/docs/client-api/#Socket) instance:
 
 ```javascript
 
 
-let eventData = await client1.onP('some-event');
+let eventData = await testClient1.on('some-event');
 
-let ackData = await client2.emitP('createFile');
+let ackData = await testClient2.emit('createFile');
 
-await client3.disconnectP();
+await testClient3.disconnect();
 ```
 
-Check [test-server.js](test-server.js) for a server example and [test/BasicTest.js](test/BasicTest.js) for examples using the [Mocha](https://mochajs.org/) test framework.
+Check [test-server.js](test-server.js) for a server example, and [test/BasicTest.js](test/BasicTest.js) for examples using the [Mocha](https://mochajs.org/) test framework.
 
 
 ## API
@@ -77,7 +77,7 @@ Check [test-server.js](test-server.js) for a server example and [test/BasicTest.
 
 Disconnect all `socket.io-unit` connected clients.
 
-### static getAllClients() -> [client1, client2, ...]
+### static getAllClients() -> [testClient1, testClient2, ...]
 
 Return all `socket.io-unit` connected clients.
 
@@ -91,14 +91,13 @@ Return all `socket.io-unit` connected clients.
 
 ### .connect() -> Promise
 
-Return a connected `socket.io-client` object wrapped in a Promise and augmented with the
-`onP`, `emitP` and `disconnectP` methods.
+Return a Promise which resolves with a `socket.io-client` object.
 
 ### .connectMany(_n = 2_) -> [Promise1, Promise2, ..., Promise _n_]
 
 _n_ * `.connect`.
 
-### .emitP() -> Promise
+### .emit() -> Promise
 
 Promise based version of the [`emit`](https://socket.io/docs/client-api/#socket-emit-eventName-%E2%80%A6args-ack) method.
 
@@ -110,14 +109,14 @@ socket.on('ev', function(arg1, arg2, cb) {
 ```
 ```javascript
 // client
-let result = await client1.emitP('ev');
+let result = await testClient1.emit('ev');
 assert.ok(result.status);
 assert.equal('some data', result.data);
 ```
 
 Note that in order for it to work you need to define a proper `handler function` in the [`constructor`](#constructor-siu).
 
-### .onP() -> Promise
+### .on() -> Promise
 
 Promise based verison of the [`on`](https://socket.io/docs/client-api/#socket-on-eventName-callback) method. If successful the promise will resolve with an array that contains the values emitted by the server, example:
 
@@ -128,16 +127,16 @@ socket.emit('secondEvent', 'foo', 'bar');
 ```
 ```javascript
 // client
-let data = await client1.onP('someEvent');
+let data = await testClient1.on('someEvent');
 assert.equal('hi', data[0]);
 
-let [foo, bar] = await client1.onP('secondEvent');
+let [foo, bar] = await testClient1.on('secondEvent');
 
 assert.equal('foo', foo);
 assert.equal('bar', bar);
 ```
 
-### .disconnectP() -> Promise
+### .disconnect() -> Promise
 
 Promise based verison of the [`disconnect`](https://socket.io/docs/client-api/#socket-disconnect) method.
 The promise being resolved doesn't guarantee that the server has acknowledged the disconnection.

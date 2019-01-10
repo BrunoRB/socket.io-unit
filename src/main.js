@@ -9,6 +9,12 @@ class SocketioUnit {
 		this.cb = cb;
 	}
 
+	/**
+	 * Promise based version of the `on` method https://socket.io/docs/client-api/#socket-on-eventName-callback
+	 *
+	 * @param {String} event
+	 * @returns {Promise}
+	 */
 	async on(event) {
 		return new Promise((innerRes) => {
 			this.client.once(event, function(...data) {
@@ -17,6 +23,14 @@ class SocketioUnit {
 		});
 	}
 
+	/**
+	 *
+	 * Promise based version of the `emit` method https://socket.io/docs/client-api/#socket-emit-eventName-%E2%80%A6args-ack
+	 *
+	 * @param {String} event
+	 * @param  {...any} data
+	 * @returns {Promise}
+	 */
 	async emit(event, ...data) {
 		return new Promise((resolve, reject) => {
 			let pCb = (...results) => {
@@ -38,6 +52,9 @@ class SocketioUnit {
 		});
 	}
 
+	/**
+	 * @returns {Promise}
+	 */
 	async disconnect() {
 		var p = new Promise((innerRes) => {
 			this.client.on('disconnect', innerRes);
@@ -46,7 +63,14 @@ class SocketioUnit {
 		return p;
 	}
 
+	/**
+	 * TODO
+	 *
+	 * @returns {Promise}
+	 */
 	async reconnect() {
+		throw 'TODO, Not working as intented';
+		/*
 		return new Promise((resolve, reject) => {
 			let _c = null;
 			this.client.once('connect', function() {
@@ -61,14 +85,16 @@ class SocketioUnit {
 			});
 			_c = this.client.open();
 		});
+		*/
 	}
 }
 
 module.exports = class SocketioUnitManager {
+
 	/**
 	 * Get all connected clients.
 	 *
-	 * @returns {Array} list of socket.io-client objects
+	 * @returns {Array} list of SocketioUnit objects
 	 */
 	static getAll() {
 		return CONNECTEDS;
@@ -166,10 +192,10 @@ module.exports = class SocketioUnitManager {
 	/**
 	 * Connect `n` clients to a socket server.
 	 *
-	 * @param {Number} n default = 2
+	 * @param {Number} n
 	 * @returns {Array} [this.connect(), this.connect(), ...]
 	 */
-	async connectMany(n = 2) {
+	async connectMany(n) {
 		return Promise.all(new Array(n).fill(0).map(() => this.connect()));
 	}
 };
