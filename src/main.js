@@ -4,35 +4,73 @@ let CONNECTEDS = [];
 
 class SocketioUnit {
 
-	static _getSocketEmitP(cb, client) {
-		return function(event, ...data) {
-			return new Promise(function(resolve, reject) {
-				let pCb = function(...results) {
-					let res = cb(...results);
-					if (res instanceof Promise) {
-						res.then(resolve).catch(reject);
-					}
-					else {
-						reject('The handler function must be async or return a Promise.');
-					}
-				}
-
-				if (data.length) {
-					client.emit(event, ...data, pCb);
-				}
-				else {
-					client.emit(event, pCb);
-				}
-			});
-		}
+	constructor(client, cb) {
+		this.client = client;
+		this.cb = cb;
 	}
 
+	async on(event) {
+		return new Promise((innerRes) => {
+			this.client.once(event, function(...data) {
+				innerRes(data);
+			});
+		});
+	}
+
+	async emit(event, ...data) {
+		return new Promise((resolve, reject) => {
+			let pCb = (...results) => {
+				let res = this.cb(...results);
+				if (res instanceof Promise) {
+					res.then(resolve).catch(reject);
+				}
+				else {
+					reject('The handler function must be async or return a Promise.');
+				}
+			}
+
+			if (data.length) {
+				this.client.emit(event, ...data, pCb);
+			}
+			else {
+				this.client.emit(event, pCb);
+			}
+		});
+	}
+
+	async disconnect() {
+		var p = new Promise((innerRes) => {
+			this.client.on('disconnect', innerRes);
+		});
+		this.client.disconnect();
+		return p;
+	}
+
+	async reconnect() {
+		return new Promise((resolve, reject) => {
+			let _c = null;
+			this.client.once('connect', function() {
+				CONNECTEDS.push(_c);
+				resolve(_c);
+			});
+			this.client.once('reconnect_error', function() {
+				reject(_c);
+			});
+			this.client.once('reconnect_failed', function() {
+				reject(_c);
+			});
+			_c = this.client.open();
+		});
+	}
+}
+
+module.exports = class SocketioUnitManager {
 	/**
 	 * Get all connected clients.
 	 *
 	 * @returns {Array} list of socket.io-client objects
 	 */
-	static getAllClients() {
+	static getAll() {
 		return CONNECTEDS;
 	}
 
@@ -43,27 +81,12 @@ class SocketioUnit {
 	 */
 	static disconnectAll() {
 		let pArr = CONNECTEDS.map(c => {
-			return c.disconnectP();
+			return c.disconnect();
 		});
 
 		return Promise.all(pArr);
 	}
 
-	/**
-	 *
-	 * @param {string} url Socket server url
-	 * @param {Function} cb Function that will handle the server
-	 * 	acknowledgement (https://socket.io/docs/#Sending-and-getting-data-acknowledgements).
-	 * 	It should return a Promise. ex:
-	 * 	<pre>
-	 * 		new SocketioUnit(url, (serverAckStatus, serverAckData) => {
-	 *			if (serverAckStatus) { return Promise.resolve(serverAckData) }
-	 *			else { return Promise.reject(serverAckData) }
-	 * 		});
-	 * 	</pre>
-	 * @param {Number} timeout How much time, in milliseconds, to wait for a connection (default = 2000)
-	 * @param {Object} params socket.io-client connection parameters, see https://socket.io/docs/client-api/#new-Manager-url-options
-	 */
 	constructor(url, cb, timeout = 2000, params = {}) {
 		if (!url) {
 			throw `Invalid url ${url}`;
@@ -81,69 +104,35 @@ class SocketioUnit {
 		this._url = url;
 		this._cb = cb;
 		this._timeout = timeout;
-		this._params = params;
-	}
 
-	async _augmentClient(client) {
-		client.emitP = SocketioUnit._getSocketEmitP(this._cb, client);
-
-		client.on('disconnect', function() {
-			CONNECTEDS = CONNECTEDS.filter(c => c.id !== client.id);
-		});
-
-		client.onP = async function(event) {
-			return new Promise(function(innerRes) {
-				client.once(event, function(...data) {
-					innerRes(data);
-				});
-			});
-		};
-
-		client.disconnectP = async function() {
-			var p = new Promise(function(innerRes) {
-				client.on('disconnect', innerRes);
-			});
-			client.disconnect();
-			return p;
-		};
-
-		client.reconnectP = async function() {
-			return new Promise(function(resolve, reject) {
-				let _c = null;
-				client.once('connect', function() {
-					CONNECTEDS.push(_c);
-					resolve(_c);
-				});
-				client.once('reconnect_error', function() {
-					reject(_c);
-				});
-				client.once('reconnect_failed', function() {
-					reject(_c);
-				});
-				_c = client.open();
-			});
-		};
+		this._params = {transports: ['websocket', 'polling']};
+		for (let i in params) {
+			this._params[i] = params[i];
+		}
 	}
 
 	/**
-	 * Connect a client to a socket server.
 	 *
-	 * @returns {Object} a socket.io-client wrapped in a Promise and augmented with the
-	 * 	`onP`, `emitP` and `disconnectP` methods (P stands for `Promise`).
+	 * @param {string} url Socket server url
+	 * @param {Function} cb Function that will handle the server
+	 * 	acknowledgement (https://socket.io/docs/#Sending-and-getting-data-acknowledgements).
+	 * 	It should return a Promise. ex:
+	 * 	<pre>
+	 * 		new SocketioUnit(url, (serverAckStatus, serverAckData) => {
+	 *			if (serverAckStatus) { return Promise.resolve(serverAckData) }
+	 *			else { return Promise.reject(serverAckData) }
+	 * 		});
+	 * 	</pre>
+	 * @param {Number} timeout How much time, in milliseconds, to wait for a connection (default = 2000)
+	 * @param {Object} params socket.io-client connection parameters, see https://socket.io/docs/client-api/#new-Manager-url-options
 	 */
 	async connect() {
 		const io = require('socket.io-client');
+		this.client = io(this._url, this._params);
 
-		let params = {transports: ['websocket', 'polling']};
-		for (let i in this._params) {
-			params[i] = this._params[i];
-		}
+		let client = this.client;
 
-		let client = io(this._url, params);
-
-		return new Promise((resolve, reject) => {
-			this._augmentClient(client);
-
+		await new Promise((resolve, reject) => {
 			let t = setTimeout(() => {
 				reject(`Could not estabilish a connection after ${this._timeout}ms`);
 			}, this._timeout);
@@ -156,7 +145,6 @@ class SocketioUnit {
 			client.once('connect', function() {
 				clearTimeout(t);
 				client.off('error');
-				CONNECTEDS.push(client);
 				resolve(client);
 			});
 			client.once('connect_error', function(e) {
@@ -164,6 +152,15 @@ class SocketioUnit {
 				reject(e);
 			});
 		});
+
+		let testClient =  new SocketioUnit(client, this._cb);
+
+		CONNECTEDS.push(testClient);
+		client.on('disconnect', function() {
+			CONNECTEDS = CONNECTEDS.filter(c => c.client.id !== client.id);
+		});
+
+		return testClient;
 	}
 
 	/**
@@ -175,6 +172,4 @@ class SocketioUnit {
 	async connectMany(n = 2) {
 		return Promise.all(new Array(n).fill(0).map(() => this.connect()));
 	}
-}
-
-module.exports = SocketioUnit;
+};
