@@ -124,14 +124,14 @@ Promise based verison of the [`on`](https://socket.io/docs/client-api/#socket-on
 ```javascript
 // server
 socket.emit('someEvent', 'hi');
-socket.emit('secondEvent', 'foo', 'bar);
+socket.emit('secondEvent', 'foo', 'bar');
 ```
 ```javascript
 // client
 let data = await client1.onP('someEvent');
 assert.equal('hi', data[0]);
 
-let [foo, var] = await client1.onP('secondEvent');
+let [foo, bar] = await client1.onP('secondEvent');
 
 assert.equal('foo', foo);
 assert.equal('bar', bar);
